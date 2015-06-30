@@ -1,0 +1,75 @@
+/* chip8.c */
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+#include "chip8.h"
+
+//Constants
+enum
+{
+  ROMSTART = 0x200,
+  ROMSIZE  = RAMSIZE - ROMSTART
+};
+
+//Font set
+unsigned char font[80] =
+{
+  0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+  0x20, 0x60, 0x20, 0x20, 0x70, // 1
+  0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+  0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+  0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+  0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+  0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+  0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+  0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+  0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+  0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+  0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+  0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+  0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+  0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+  0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+};
+
+//Functions
+
+int chip8_init(struct chip8 *chip8)
+{
+  memset(chip8,0x00,sizeof(*chip8));
+  //Initilize Program Counter
+  chip8->pc = ROMSTART;
+  //Initilize Timers
+  chip8->delay_timer = chip8->sound_timer = 60;
+  //Load font
+  memcpy(chip8->memory, font, sizeof(font));
+  //Initilize a few values to 0
+  chip8->waiting
+    = chip8->sp
+    = chip8->I
+    = chip8->key
+    = 0;
+  chip8->clear = 1;
+  //Randomize input
+  srand(time(NULL));
+  //Return success
+  return 0;
+}
+
+int chip8_loadrom(struct chip8 *chip8, const char *filename )
+{
+  FILE *file = fopen(filename,"r");
+
+  if(file == NULL)
+  {
+    printf("Invalid filename. \n");
+    return 1;
+  }
+
+  fread(chip8->memory + ROMSTART, 1, ROMSIZE, file);
+  fclose(file);
+  return 0;
+}
+
